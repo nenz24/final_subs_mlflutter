@@ -4,7 +4,6 @@ import 'package:project/services/classifier_service.dart';
 class FirebaseMLService {
   static const String _modelName = 'food-classifier';
 
-  /// Download model from Firebase ML and initialize the classifier
   Future<String?> downloadAndInitialize(ClassifierService classifierService) async {
     try {
       final model = await FirebaseModelDownloader.instance.getModel(

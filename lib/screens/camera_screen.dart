@@ -22,7 +22,6 @@ class _CameraScreenState extends State<CameraScreen>
   ClassificationResult? _liveResult;
   int _frameSkipCount = 0;
 
-  // Pulsing animation for capture button
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -55,7 +54,6 @@ class _CameraScreenState extends State<CameraScreen>
 
       await _controller!.initialize();
 
-      // Start image stream for real-time classification
       _startImageStream();
 
       if (mounted) {
@@ -74,7 +72,6 @@ class _CameraScreenState extends State<CameraScreen>
 
     _controller?.startImageStream((CameraImage image) {
       _frameSkipCount++;
-      // Process every 30th frame to avoid overloading
       if (_frameSkipCount % 30 != 0) return;
       if (_isProcessingStream) return;
 
@@ -111,7 +108,6 @@ class _CameraScreenState extends State<CameraScreen>
     });
 
     try {
-      // Stop image stream before capturing
       await _controller!.stopImageStream();
 
       final file = await _controller!.takePicture();
@@ -141,12 +137,10 @@ class _CameraScreenState extends State<CameraScreen>
       body: _isInitialized
           ? Stack(
               children: [
-                // Camera preview — full screen
                 Positioned.fill(
                   child: CameraPreview(_controller!),
                 ),
 
-                // Top bar with back button
                 Positioned(
                   top: 0,
                   left: 0,
@@ -220,7 +214,6 @@ class _CameraScreenState extends State<CameraScreen>
                   ),
                 ),
 
-                // Live classification result overlay
                 if (_liveResult != null)
                   Positioned(
                     bottom: 140,
@@ -318,7 +311,6 @@ class _CameraScreenState extends State<CameraScreen>
                     ),
                   ),
 
-                // Capture button with pulse animation
                 Positioned(
                   bottom: 40,
                   left: 0,

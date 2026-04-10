@@ -52,7 +52,6 @@ class GeminiService {
     );
   }
 
-  /// Get nutrition info for a food name
   Future<Nutrition> getNutritionInfo(String foodName) async {
     await _ensureInitialized();
 

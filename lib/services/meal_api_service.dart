@@ -5,7 +5,6 @@ import 'package:project/models/meal.dart';
 class MealApiService {
   static const String _baseUrl = 'https://www.themealdb.com/api/json/v1/1';
 
-  /// Search meals by name
   Future<List<Meal>> searchMealByName(String name) async {
     try {
       final uri = Uri.parse('$_baseUrl/search.php?s=$name');
@@ -30,7 +29,6 @@ class MealApiService {
     }
   }
 
-  /// Get full meal details by ID
   Future<Meal?> getMealById(String id) async {
     try {
       final uri = Uri.parse('$_baseUrl/lookup.php?i=$id');

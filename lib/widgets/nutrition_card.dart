@@ -20,10 +20,8 @@ class NutritionCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Calorie row — highlighted
           _buildCalorieRow(),
           const SizedBox(height: 20),
-          // Macro nutrients grid
           Row(
             children: [
               Expanded(
@@ -132,7 +130,6 @@ class NutritionCard extends StatelessWidget {
     double rawValue,
     Color color,
   ) {
-    // Normalize to 0-1 range (max ~200g for display purposes)
     final progress = (rawValue / 200).clamp(0.0, 1.0);
 
     return Column(
@@ -143,7 +140,6 @@ class NutritionCard extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Background ring
               SizedBox(
                 width: 56,
                 height: 56,
@@ -153,7 +149,6 @@ class NutritionCard extends StatelessWidget {
                   color: color.withValues(alpha: 0.12),
                 ),
               ),
-              // Progress ring
               SizedBox(
                 width: 56,
                 height: 56,
@@ -164,7 +159,6 @@ class NutritionCard extends StatelessWidget {
                   strokeCap: StrokeCap.round,
                 ),
               ),
-              // Value
               Text(
                 value,
                 style: TextStyle(

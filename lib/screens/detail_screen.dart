@@ -11,7 +11,6 @@ class DetailScreen extends StatelessWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // Hero image app bar
           SliverAppBar(
             expandedHeight: 280,
             pinned: true,
@@ -42,7 +41,6 @@ class DetailScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  // Gradient overlay
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -57,7 +55,6 @@ class DetailScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Title at bottom
                   Positioned(
                     bottom: 16,
                     left: 20,
@@ -94,21 +91,18 @@ class DetailScreen extends StatelessWidget {
             ),
           ),
 
-          // Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Ingredients section
                   _buildSectionHeader('Ingredients', Icons.shopping_basket_outlined),
                   const SizedBox(height: 14),
                   _buildIngredientsGrid(),
 
                   const SizedBox(height: 28),
 
-                  // Instructions section
                   _buildSectionHeader('Instructions', Icons.receipt_long_outlined),
                   const SizedBox(height: 14),
                   _buildInstructionsCard(),

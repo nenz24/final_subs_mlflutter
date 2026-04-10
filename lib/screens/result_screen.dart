@@ -31,7 +31,6 @@ class ResultScreen extends StatelessWidget {
             body: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
-                  // Hero image with overlay info
                   SliverAppBar(
                     expandedHeight: 300,
                     pinned: true,
@@ -55,14 +54,12 @@ class ResultScreen extends StatelessWidget {
                       background: Stack(
                         fit: StackFit.expand,
                         children: [
-                          // Food image
                           if (provider.selectedImage != null)
                             Image.file(
                               provider.selectedImage!,
                               fit: BoxFit.cover,
                             ),
 
-                          // Gradient overlay
                           Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -78,7 +75,6 @@ class ResultScreen extends StatelessWidget {
                             ),
                           ),
 
-                          // Bottom info: name + confidence gauge
                           Positioned(
                             bottom: 16,
                             left: 20,
@@ -115,7 +111,6 @@ class ResultScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                // Confidence ring
                                 _ConfidenceRing(
                                   confidence: result.confidence,
                                 ),
@@ -127,7 +122,6 @@ class ResultScreen extends StatelessWidget {
                     ),
                   ),
 
-                  // Tab bar
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: _TabBarDelegate(
@@ -157,9 +151,7 @@ class ResultScreen extends StatelessWidget {
               },
               body: TabBarView(
                 children: [
-                  // Tab 1: Nutrition
                   _buildNutritionTab(provider),
-                  // Tab 2: Recipes
                   _buildRecipesTab(context, provider),
                 ],
               ),
@@ -281,7 +273,6 @@ class ResultScreen extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-                // Thumbnail
                 ClipRRect(
                   borderRadius: BorderRadius.circular(14),
                   child: meal.strMealThumb != null
@@ -296,7 +287,6 @@ class ResultScreen extends StatelessWidget {
                       : _buildFallbackThumb(),
                 ),
                 const SizedBox(width: 14),
-                // Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,7 +402,6 @@ class ResultScreen extends StatelessWidget {
   }
 }
 
-// ─── Confidence Ring Widget ──────────────────────────────────────────────────
 
 class _ConfidenceRing extends StatelessWidget {
   final double confidence;
@@ -428,7 +417,6 @@ class _ConfidenceRing extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Background ring
           SizedBox(
             width: 64,
             height: 64,
@@ -438,7 +426,6 @@ class _ConfidenceRing extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
-          // Confidence ring
           SizedBox(
             width: 64,
             height: 64,
@@ -449,7 +436,6 @@ class _ConfidenceRing extends StatelessWidget {
               strokeCap: StrokeCap.round,
             ),
           ),
-          // Percentage text
           Text(
             '$percentage%',
             style: const TextStyle(
@@ -470,7 +456,6 @@ class _ConfidenceRing extends StatelessWidget {
   }
 }
 
-// ─── Tab Bar Delegate ────────────────────────────────────────────────────────
 
 class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final TabBar tabBar;

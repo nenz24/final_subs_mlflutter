@@ -16,7 +16,7 @@ class FoodClassifierProvider extends ChangeNotifier {
   final FirebaseMLService _firebaseMLService = FirebaseMLService();
   final ImagePicker _imagePicker = ImagePicker();
 
-  // State
+  
   File? _selectedImage;
   ClassificationResult? _classificationResult;
   List<Meal> _meals = [];
@@ -29,7 +29,6 @@ class FoodClassifierProvider extends ChangeNotifier {
   bool _isModelInitialized = false;
   bool _isFirebaseModel = false;
 
-  // Getters
   File? get selectedImage => _selectedImage;
   ClassificationResult? get classificationResult => _classificationResult;
   List<Meal> get meals => _meals;
@@ -43,14 +42,12 @@ class FoodClassifierProvider extends ChangeNotifier {
   bool get isFirebaseModel => _isFirebaseModel;
   ClassifierService get classifierService => _classifierService;
 
-  /// Initialize the ML model
   Future<void> initializeModel() async {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      // Try Firebase ML first
       try {
         final path = await _firebaseMLService.downloadAndInitialize(_classifierService);
         if (path != null) {
@@ -64,7 +61,6 @@ class FoodClassifierProvider extends ChangeNotifier {
         // Firebase ML failed, fallback to local
       }
 
-      // Fallback to local model
       await _classifierService.initialize();
       _isModelInitialized = true;
       _isLoading = false;
@@ -77,7 +73,6 @@ class FoodClassifierProvider extends ChangeNotifier {
     }
   }
 
-  /// Pick image from gallery
   Future<void> pickImageFromGallery() async {
     try {
       final pickedFile = await _imagePicker.pickImage(
@@ -101,7 +96,6 @@ class FoodClassifierProvider extends ChangeNotifier {
     }
   }
 
-  /// Pick image from camera
   Future<void> pickImageFromCamera() async {
     try {
       final pickedFile = await _imagePicker.pickImage(
@@ -125,7 +119,6 @@ class FoodClassifierProvider extends ChangeNotifier {
     }
   }
 
-  /// Set image from custom camera or cropper
   void setImage(String path) {
     _selectedImage = File(path);
     _classificationResult = null;
@@ -135,13 +128,11 @@ class FoodClassifierProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Set cropped image
   void setCroppedImage(String path) {
     _selectedImage = File(path);
     notifyListeners();
   }
 
-  /// Classify the selected image
   Future<void> classifyImage() async {
     if (_selectedImage == null) {
       _error = 'Belum ada gambar yang dipilih. Silakan ambil atau pilih gambar terlebih dahulu.';
@@ -174,7 +165,6 @@ class FoodClassifierProvider extends ChangeNotifier {
     }
   }
 
-  /// Fetch meal info from MealDB API
   Future<void> fetchMealInfo() async {
     if (_classificationResult == null) return;
 
@@ -195,7 +185,6 @@ class FoodClassifierProvider extends ChangeNotifier {
     }
   }
 
-  /// Fetch nutrition info from Gemini API
   Future<void> fetchNutritionInfo() async {
     if (_classificationResult == null) return;
 
@@ -224,12 +213,10 @@ class FoodClassifierProvider extends ChangeNotifier {
     }
   }
 
-  /// Classify image and fetch all related info
   Future<void> classifyAndFetchAll() async {
     await classifyImage();
 
     if (_classificationResult != null) {
-      // Run API calls in parallel
       await Future.wait([
         fetchMealInfo(),
         fetchNutritionInfo(),
@@ -237,7 +224,6 @@ class FoodClassifierProvider extends ChangeNotifier {
     }
   }
 
-  /// Reset all state
   void reset() {
     _selectedImage = null;
     _classificationResult = null;

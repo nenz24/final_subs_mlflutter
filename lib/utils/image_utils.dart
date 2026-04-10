@@ -2,7 +2,6 @@ import 'package:camera/camera.dart';
 import 'package:image/image.dart' as image_lib;
 
 class ImageUtils {
-  /// Convert CameraImage (YUV420/BGRA) to image_lib.Image
   static image_lib.Image convertCameraImage(CameraImage cameraImage) {
     if (cameraImage.format.group == ImageFormatGroup.yuv420) {
       return _convertYUV420(cameraImage);
@@ -34,7 +33,6 @@ class ImageUtils {
         final uValue = uPlane.bytes[uvIndex];
         final vValue = vPlane.bytes[uvIndex];
 
-        // YUV to RGB conversion
         int r = (yValue + 1.370705 * (vValue - 128)).round().clamp(0, 255);
         int g = (yValue - 0.337633 * (uValue - 128) - 0.698001 * (vValue - 128))
             .round()
@@ -72,7 +70,6 @@ class ImageUtils {
     return img;
   }
 
-  /// Preprocess image for model input (resize to 224x224)
   static image_lib.Image preprocessForModel(
     image_lib.Image img, {
     int inputSize = 224,

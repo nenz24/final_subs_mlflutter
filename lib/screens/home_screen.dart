@@ -66,7 +66,6 @@ class HomeScreen extends StatelessWidget {
         builder: (context, provider, _) {
           return CustomScrollView(
             slivers: [
-              // Custom App Bar with glassmorphism
               _buildSliverAppBar(provider),
 
               SliverToBoxAdapter(
@@ -77,25 +76,20 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 20),
 
-                      // Image preview card
                       _buildImagePreview(context, provider),
 
                       const SizedBox(height: 24),
 
-                      // Source selection chips
                       _buildSourceChips(context, provider),
 
                       const SizedBox(height: 20),
 
-                      // Action buttons
                       if (provider.selectedImage != null)
                         _buildActionSection(context, provider),
 
-                      // Error display
                       if (provider.error != null)
                         _buildErrorCard(provider.error!),
 
-                      // Model loading
                       if (!provider.isModelInitialized && provider.isLoading)
                         _buildModelLoading(),
 
@@ -146,7 +140,6 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            // Model status indicator
             Container(
               width: 8,
               height: 8,
@@ -200,7 +193,6 @@ class HomeScreen extends StatelessWidget {
                   provider.selectedImage!,
                   fit: BoxFit.cover,
                 ),
-                // Bottom gradient overlay
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -341,7 +333,6 @@ class HomeScreen extends StatelessWidget {
   ) {
     return Column(
       children: [
-        // Analyze button — full width, primary
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -396,7 +387,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // Crop & Analyze — outlined
         SizedBox(
           width: double.infinity,
           child: OutlinedButton(
@@ -489,7 +479,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-// ─── Source Chip Widget ───────────────────────────────────────────────────────
 
 class _SourceChip extends StatelessWidget {
   final IconData icon;
