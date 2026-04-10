@@ -70,7 +70,8 @@ class FoodClassifierProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      _error = 'Failed to initialize model: $e';
+      debugPrint('Model init error: $e');
+      _error = 'Gagal memuat model AI. Pastikan koneksi internet stabil dan coba restart aplikasi.';
       _isLoading = false;
       notifyListeners();
     }
@@ -94,7 +95,8 @@ class FoodClassifierProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _error = 'Failed to pick image: $e';
+      debugPrint('Image pick error: $e');
+      _error = 'Gagal memilih gambar. Pastikan izin akses galeri sudah diberikan.';
       notifyListeners();
     }
   }
@@ -117,7 +119,8 @@ class FoodClassifierProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _error = 'Failed to capture image: $e';
+      debugPrint('Camera capture error: $e');
+      _error = 'Gagal mengambil foto. Pastikan izin akses kamera sudah diberikan.';
       notifyListeners();
     }
   }
@@ -141,13 +144,13 @@ class FoodClassifierProvider extends ChangeNotifier {
   /// Classify the selected image
   Future<void> classifyImage() async {
     if (_selectedImage == null) {
-      _error = 'No image selected';
+      _error = 'Belum ada gambar yang dipilih. Silakan ambil atau pilih gambar terlebih dahulu.';
       notifyListeners();
       return;
     }
 
     if (!_isModelInitialized) {
-      _error = 'Model not initialized';
+      _error = 'Model AI belum siap. Tunggu beberapa saat atau restart aplikasi.';
       notifyListeners();
       return;
     }
@@ -164,7 +167,8 @@ class FoodClassifierProvider extends ChangeNotifier {
       _isClassifying = false;
       notifyListeners();
     } catch (e) {
-      _error = 'Classification failed: $e';
+      debugPrint('Classification error: $e');
+      _error = 'Gagal menganalisis gambar. Coba gunakan gambar makanan yang lebih jelas.';
       _isClassifying = false;
       notifyListeners();
     }
@@ -185,6 +189,7 @@ class FoodClassifierProvider extends ChangeNotifier {
       _isFetchingMeals = false;
       notifyListeners();
     } catch (e) {
+      debugPrint('MealDB fetch error: $e');
       _isFetchingMeals = false;
       notifyListeners();
     }
@@ -205,7 +210,16 @@ class FoodClassifierProvider extends ChangeNotifier {
       _isFetchingNutrition = false;
       notifyListeners();
     } catch (e) {
+      debugPrint('Gemini nutrition error: $e');
       _isFetchingNutrition = false;
+      final errorMsg = e.toString().toLowerCase();
+      if (errorMsg.contains('quota') || errorMsg.contains('rate')) {
+        _error = 'Kuota API nutrisi habis. Coba lagi nanti atau gunakan API key baru.';
+      } else if (errorMsg.contains('network') || errorMsg.contains('socket') || errorMsg.contains('connection')) {
+        _error = 'Tidak ada koneksi internet. Periksa jaringan Anda dan coba lagi.';
+      } else {
+        _error = 'Gagal memuat informasi nutrisi. Coba lagi nanti.';
+      }
       notifyListeners();
     }
   }

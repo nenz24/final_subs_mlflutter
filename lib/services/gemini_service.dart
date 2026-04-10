@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:project/models/nutrition.dart';
@@ -15,30 +16,34 @@ class GeminiService {
     }
 
     _model = GenerativeModel(
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.0-flash-lite',
       apiKey: apiKey,
-      systemInstruction: Content.text(
+      systemInstruction: Content.system(
         'Saya adalah suatu mesin yang mampu mengidentifikasi nutrisi atau '
         'kandungan gizi pada makanan layaknya uji laboratorium makanan. '
         'Hal yang bisa diidentifikasi adalah kalori, karbohidrat, lemak, '
         'serat, dan protein pada makanan. Satuan dari indikator tersebut '
-        'berupa gram, kecuali kalori dalam satuan kkal.',
+        'berupa gram.',
       ),
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
-        responseSchema: Schema(
-          SchemaType.object,
+        responseSchema: Schema.object(
           properties: {
-            'nutrition': Schema(
-              SchemaType.object,
+            'nutrition': Schema.object(
               properties: {
-                'calories': Schema(SchemaType.integer),
-                'carbs': Schema(SchemaType.integer),
-                'protein': Schema(SchemaType.integer),
-                'fat': Schema(SchemaType.integer),
-                'fiber': Schema(SchemaType.integer),
+                'calories': Schema.integer(),
+                'carbs': Schema.integer(),
+                'protein': Schema.integer(),
+                'fat': Schema.integer(),
+                'fiber': Schema.integer(),
               },
-              requiredProperties: ['calories', 'carbs', 'protein', 'fat', 'fiber'],
+              requiredProperties: [
+                'calories',
+                'carbs',
+                'protein',
+                'fat',
+                'fiber',
+              ],
             ),
           },
           requiredProperties: ['nutrition'],
@@ -52,9 +57,13 @@ class GeminiService {
     await _ensureInitialized();
 
     final prompt = 'Nama makanannya adalah $foodName.';
+    debugPrint('Gemini request: $prompt');
+
     final response = await _model!.generateContent([Content.text(prompt)]);
 
     final text = response.text;
+    debugPrint('Gemini response: $text');
+
     if (text == null || text.isEmpty) {
       throw Exception('Empty response from Gemini');
     }

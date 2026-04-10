@@ -67,8 +67,8 @@ class ClassifierService {
       throw Exception('Classifier not initialized');
     }
 
-    // Preprocess image
-    final input = _preprocessImage(img);
+    // Preprocess image to uint8 format (matching model's expected input)
+    final input = _preprocessImageUint8(img);
 
     // Get model path for isolate
     final modelPath = await _getModelFilePath();
@@ -86,18 +86,37 @@ class ClassifierService {
   ClassificationResult? classifyCameraFrame(image_lib.Image img) {
     if (!_isInitialized || _interpreter == null) return null;
 
-    final input = _preprocessImage(img);
-    final output = List.filled(1 * _getOutputSize(), 0.0).reshape([1, _getOutputSize()]);
+    try {
+      final input = _preprocessImageUint8(img);
 
-    _interpreter!.run(input, output);
+      // Check output tensor type and create appropriate output buffer
+      final outputTensor = _interpreter!.getOutputTensor(0);
+      final outputSize = outputTensor.shape.last;
 
-    final probabilities = (output[0] as List<double>);
-    return _getTopResult(probabilities);
+      if (outputTensor.type == TensorType.uint8) {
+        final output = List.filled(1 * outputSize, 0).reshape([1, outputSize]);
+        _interpreter!.run(input, output);
+        // Convert uint8 output to double probabilities (0-255 -> 0.0-1.0)
+        final probabilities = (output[0] as List)
+            .map((e) => (e as int).toDouble() / 255.0)
+            .toList();
+        return _getTopResult(probabilities);
+      } else {
+        final output =
+            List.filled(1 * outputSize, 0.0).reshape([1, outputSize]);
+        _interpreter!.run(input, output);
+        final probabilities = List<double>.from(output[0] as List);
+        return _getTopResult(probabilities);
+      }
+    } catch (e) {
+      return null;
+    }
   }
 
-  /// Preprocess image to model input format (224x224 RGB normalized)
-  List<List<List<List<double>>>> _preprocessImage(image_lib.Image img) {
-    final resized = image_lib.copyResize(img, width: inputSize, height: inputSize);
+  /// Preprocess image to uint8 model input format (224x224 RGB, values 0-255)
+  List<List<List<List<int>>>> _preprocessImageUint8(image_lib.Image img) {
+    final resized =
+        image_lib.copyResize(img, width: inputSize, height: inputSize);
 
     final input = List.generate(
       1,
@@ -108,9 +127,9 @@ class ClassifierService {
           (x) {
             final pixel = resized.getPixel(x, y);
             return [
-              pixel.r.toDouble() / 255.0,
-              pixel.g.toDouble() / 255.0,
-              pixel.b.toDouble() / 255.0,
+              pixel.r.toInt().clamp(0, 255),
+              pixel.g.toInt().clamp(0, 255),
+              pixel.b.toInt().clamp(0, 255),
             ];
           },
         ),
@@ -120,9 +139,6 @@ class ClassifierService {
     return input;
   }
 
-  int _getOutputSize() {
-    return _labels?.length ?? 2024;
-  }
 
   ClassificationResult _getTopResult(List<double> probabilities) {
     double maxScore = -1;
@@ -160,19 +176,29 @@ class ClassifierService {
   /// Static method to run inference in an isolate
   static List<double> _runInferenceInIsolate(
     String modelPath,
-    List<List<List<List<double>>>> input,
+    List<List<List<List<int>>>> input,
   ) {
     final interpreter = Interpreter.fromFile(File(modelPath));
 
-    final outputShape = interpreter.getOutputTensor(0).shape;
-    final outputSize = outputShape.last;
+    final outputTensor = interpreter.getOutputTensor(0);
+    final outputSize = outputTensor.shape.last;
 
-    final output = List.filled(1 * outputSize, 0.0).reshape([1, outputSize]);
-
-    interpreter.run(input, output);
-    interpreter.close();
-
-    return List<double>.from(output[0] as List);
+    // Handle uint8 output tensor type
+    if (outputTensor.type == TensorType.uint8) {
+      final output = List.filled(1 * outputSize, 0).reshape([1, outputSize]);
+      interpreter.run(input, output);
+      interpreter.close();
+      // Convert uint8 output (0-255) to double probabilities (0.0-1.0)
+      return (output[0] as List)
+          .map((e) => (e as int).toDouble() / 255.0)
+          .toList();
+    } else {
+      final output =
+          List.filled(1 * outputSize, 0.0).reshape([1, outputSize]);
+      interpreter.run(input, output);
+      interpreter.close();
+      return List<double>.from(output[0] as List);
+    }
   }
 
   void dispose() {

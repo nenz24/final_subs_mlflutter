@@ -10,186 +10,244 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Result Page'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Consumer<FoodClassifierProvider>(
-        builder: (context, provider, _) {
-          final result = provider.classificationResult;
-          if (result == null) {
-            return const Center(
+    return Consumer<FoodClassifierProvider>(
+      builder: (context, provider, _) {
+        final result = provider.classificationResult;
+        if (result == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Result')),
+            body: const Center(
               child: Text(
                 'No classification result',
                 style: TextStyle(color: Colors.white54),
               ),
-            );
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Food image
-                _buildFoodImage(provider),
-
-                const SizedBox(height: 20),
-
-                // Food name and confidence
-                _buildPredictionHeader(result.label, result.confidence),
-
-                const SizedBox(height: 24),
-
-                // Nutrition section
-                _buildNutritionSection(provider),
-
-                const SizedBox(height: 24),
-
-                // MealDB references section
-                _buildReferencesSection(context, provider),
-              ],
             ),
           );
-        },
-      ),
-    );
-  }
+        }
 
-  Widget _buildFoodImage(FoodClassifierProvider provider) {
-    return Container(
-      height: 220,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: provider.selectedImage != null
-          ? Image.file(
-              provider.selectedImage!,
-              fit: BoxFit.cover,
-            )
-          : Container(color: const Color(0xFF16213E)),
-    );
-  }
+        return DefaultTabController(
+          length: 2,
+          child: Scaffold(
+            body: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  // Hero image with overlay info
+                  SliverAppBar(
+                    expandedHeight: 300,
+                    pinned: true,
+                    backgroundColor: const Color(0xFF0F1923),
+                    leading: IconButton(
+                      icon: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Food image
+                          if (provider.selectedImage != null)
+                            Image.file(
+                              provider.selectedImage!,
+                              fit: BoxFit.cover,
+                            ),
 
-  Widget _buildPredictionHeader(String label, double confidence) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
+                          // Gradient overlay
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.3),
+                                  const Color(0xFF0F1923),
+                                ],
+                                stops: const [0.3, 0.7, 1.0],
+                              ),
+                            ),
+                          ),
+
+                          // Bottom info: name + confidence gauge
+                          Positioned(
+                            bottom: 16,
+                            left: 20,
+                            right: 20,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        result.label,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w800,
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'AI Food Detection',
+                                        style: TextStyle(
+                                          color:
+                                              const Color(0xFF0D9373)
+                                                  .withValues(alpha: 0.8),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Confidence ring
+                                _ConfidenceRing(
+                                  confidence: result.confidence,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Tab bar
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _TabBarDelegate(
+                      TabBar(
+                        indicatorColor: const Color(0xFF0D9373),
+                        indicatorWeight: 3,
+                        labelColor: const Color(0xFF0D9373),
+                        unselectedLabelColor: Colors.white54,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                        tabs: const [
+                          Tab(
+                            icon: Icon(Icons.restaurant_menu, size: 20),
+                            text: 'Nutrition',
+                          ),
+                          Tab(
+                            icon: Icon(Icons.menu_book, size: 20),
+                            text: 'Recipes',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              body: TabBarView(
+                children: [
+                  // Tab 1: Nutrition
+                  _buildNutritionTab(provider),
+                  // Tab 2: Recipes
+                  _buildRecipesTab(context, provider),
+                ],
+              ),
             ),
           ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: _getConfidenceColor(confidence),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            '${(confidence * 100).toStringAsFixed(2)}%',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
-  Widget _buildNutritionSection(FoodClassifierProvider provider) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildNutritionTab(FoodClassifierProvider provider) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
       children: [
         const Text(
           'Nutrition Facts',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
+        Text(
+          'Estimated values powered by Gemini AI',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 20),
         if (provider.isFetchingNutrition)
           const Center(
             child: Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(),
+              padding: EdgeInsets.all(40),
+              child: CircularProgressIndicator(
+                color: Color(0xFF0D9373),
+              ),
             ),
           )
         else if (provider.nutrition != null)
           NutritionCard(nutrition: provider.nutrition!)
         else
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'Nutrition info not available',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-              ),
-            ),
+          _buildEmptyState(
+            Icons.no_food_rounded,
+            'Nutrition info not available',
           ),
       ],
     );
   }
 
-  Widget _buildReferencesSection(
+  Widget _buildRecipesTab(
     BuildContext context,
     FoodClassifierProvider provider,
   ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.all(20),
       children: [
         const Text(
-          'Reference',
+          'Related Recipes',
           style: TextStyle(
             color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
+        Text(
+          'From TheMealDB',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.4),
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 20),
         if (provider.isFetchingMeals)
           const Center(
             child: Padding(
-              padding: EdgeInsets.all(20),
-              child: CircularProgressIndicator(),
+              padding: EdgeInsets.all(40),
+              child: CircularProgressIndicator(
+                color: Color(0xFF0D9373),
+              ),
             ),
           )
         else if (provider.meals.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'No related recipes found',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                ),
-              ),
-            ),
+          _buildEmptyState(
+            Icons.search_off_rounded,
+            'No related recipes found',
           )
         else
           ...provider.meals.map((meal) => _buildMealCard(context, meal)),
@@ -198,94 +256,245 @@ class ResultScreen extends StatelessWidget {
   }
 
   Widget _buildMealCard(BuildContext context, Meal meal) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => DetailScreen(meal: meal),
-            ),
-          );
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              // Meal thumbnail
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: meal.strMealThumb != null
-                    ? Image.network(
-                        meal.strMealThumb!,
-                        width: 70,
-                        height: 70,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 70,
-                          height: 70,
-                          color: const Color(0xFF0F3460),
-                          child: const Icon(
-                            Icons.restaurant,
-                            color: Colors.white54,
-                          ),
-                        ),
-                      )
-                    : Container(
-                        width: 70,
-                        height: 70,
-                        color: const Color(0xFF0F3460),
-                        child: const Icon(
-                          Icons.restaurant,
-                          color: Colors.white54,
-                        ),
-                      ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF162231),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.06),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DetailScreen(meal: meal),
               ),
-              const SizedBox(width: 14),
-              // Meal info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      meal.strMeal,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (meal.strCategory != null || meal.strArea != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        [meal.strCategory, meal.strArea]
-                            .where((e) => e != null)
-                            .join(' • '),
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ],
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                // Thumbnail
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: meal.strMealThumb != null
+                      ? Image.network(
+                          meal.strMealThumb!,
+                          width: 72,
+                          height: 72,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildFallbackThumb(),
+                        )
+                      : _buildFallbackThumb(),
                 ),
-              ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.white54,
-              ),
-            ],
+                const SizedBox(width: 14),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        meal.strMeal,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (meal.strCategory != null ||
+                          meal.strArea != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            if (meal.strCategory != null) ...[
+                              Icon(
+                                Icons.category_outlined,
+                                size: 13,
+                                color: Colors.white.withValues(alpha: 0.4),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                meal.strCategory!,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                            if (meal.strCategory != null &&
+                                meal.strArea != null)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Text(
+                                  '·',
+                                  style: TextStyle(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.3),
+                                  ),
+                                ),
+                              ),
+                            if (meal.strArea != null) ...[
+                              Icon(
+                                Icons.public,
+                                size: 13,
+                                color: Colors.white.withValues(alpha: 0.4),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                meal.strArea!,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: const Color(0xFF0D9373).withValues(alpha: 0.6),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Color _getConfidenceColor(double confidence) {
-    if (confidence >= 0.7) return Colors.green.shade700;
-    if (confidence >= 0.4) return Colors.orange.shade700;
-    return Colors.red.shade700;
+  Widget _buildFallbackThumb() {
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D9373).withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Icon(
+        Icons.restaurant,
+        color: const Color(0xFF0D9373).withValues(alpha: 0.5),
+      ),
+    );
   }
+
+  Widget _buildEmptyState(IconData icon, String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          children: [
+            Icon(icon, size: 48, color: Colors.white.withValues(alpha: 0.2)),
+            const SizedBox(height: 12),
+            Text(
+              message,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Confidence Ring Widget ──────────────────────────────────────────────────
+
+class _ConfidenceRing extends StatelessWidget {
+  final double confidence;
+
+  const _ConfidenceRing({required this.confidence});
+
+  @override
+  Widget build(BuildContext context) {
+    final percentage = (confidence * 100).toStringAsFixed(1);
+    return SizedBox(
+      width: 64,
+      height: 64,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Background ring
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: CircularProgressIndicator(
+              value: 1.0,
+              strokeWidth: 4,
+              color: Colors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          // Confidence ring
+          SizedBox(
+            width: 64,
+            height: 64,
+            child: CircularProgressIndicator(
+              value: confidence,
+              strokeWidth: 4,
+              color: _getColor(),
+              strokeCap: StrokeCap.round,
+            ),
+          ),
+          // Percentage text
+          Text(
+            '$percentage%',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getColor() {
+    if (confidence >= 0.7) return const Color(0xFF22C55E);
+    if (confidence >= 0.4) return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
+  }
+}
+
+// ─── Tab Bar Delegate ────────────────────────────────────────────────────────
+
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+
+  _TabBarDelegate(this.tabBar);
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: const Color(0xFF0F1923),
+      child: tabBar,
+    );
+  }
+
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+
+  @override
+  bool shouldRebuild(covariant _TabBarDelegate oldDelegate) => false;
 }

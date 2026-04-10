@@ -32,39 +32,50 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => FoodClassifierProvider()..initializeModel(),
       child: MaterialApp(
-        title: 'Food Recognizer App',
+        title: 'FoodLens',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2C3E50),
+            seedColor: const Color(0xFF0D9373),
             brightness: Brightness.dark,
+            surface: const Color(0xFF162231),
+            primary: const Color(0xFF0D9373),
+            secondary: const Color(0xFF06B6D4),
           ),
           useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFF1A1A2E),
+          scaffoldBackgroundColor: const Color(0xFF0F1923),
           appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF16213E),
+            backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
             elevation: 0,
             centerTitle: true,
+            titleTextStyle: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
           ),
           cardTheme: CardThemeData(
-            color: const Color(0xFF16213E),
-            elevation: 4,
+            color: const Color(0xFF162231),
+            elevation: 0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(20),
             ),
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F3460),
+              backgroundColor: const Color(0xFF0D9373),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
+              elevation: 0,
               textStyle: const TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
               ),
             ),
           ),
